@@ -1403,8 +1403,11 @@ async function initInsights() {
                 return `
                 <div class="h-bar-row">
                     <div class="h-bar-label" ${highlight}>${s.sector}</div>
-                    <div class="h-bar-track"><div class="h-bar-fill ${s.status}" style="--w: ${Math.min(100, s.weight)}%"></div></div>
-                    <div class="h-bar-value" ${highlight}>${s.weight}%</div>
+                    <div class="h-bar-track" style="position: relative;">
+                        <div class="h-bar-fill ${s.status}" style="--w: ${Math.min(100, s.weight)}%"></div>
+                        <div style="position:absolute; top:-2px; bottom:-2px; width:2px; background:#fff; left: ${s.limit}%; z-index:2; box-shadow: 0 0 5px #fff;" title="Limit: ${s.limit}%"></div>
+                    </div>
+                    <div class="h-bar-value" ${highlight}>${s.weight}% <span style="font-size:0.55rem; color:var(--muted-text)">/ ${s.limit}%</span></div>
                 </div>`;
             }).join('');
 
