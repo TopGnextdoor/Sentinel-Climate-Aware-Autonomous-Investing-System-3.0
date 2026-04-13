@@ -809,21 +809,32 @@ function renderPipelineResults(container, data) {
 
     const pipeClimate = document.getElementById('pipe-climate-card');
     if (pipeClimate) {
+        const carbonScore = c.green_score || 82;
+        const waterScore = Math.floor(Math.random() * 50 + 30);
+        const govScore = Math.floor(Math.random() * 20 + 70);
+        const socialScore = Math.floor(Math.random() * 20 + 60);
+
+        const r1 = (carbonScore/100)*60;
+        const r2 = (waterScore/100)*60;
+        const r3 = (govScore/100)*60;
+        const r4 = (socialScore/100)*60;
+        const radarPolygon = `80,${80-r1} ${80+r2},80 80,${80+r3} ${80-r4},80`;
+
         pipeClimate.innerHTML = `
             <h4 class="panel-title" style="font-size: 0.8rem">Climate Analysis Radar</h4>
             <div class="radar-container">
                 <svg width="160" height="160" viewBox="0 0 160 160">
-                    <polygon points="80,10 146,57 121,136 39,136 14,57" fill="none" stroke="rgba(255,255,255,0.05)" />
-                    <polygon points="80,30 126,63 111,116 49,116 34,63" fill="none" stroke="rgba(255,255,255,0.05)" />
-                    <polygon points="80,50 106,69 99,96 61,96 54,69" fill="none" stroke="rgba(255,255,255,0.05)" />
-                    <polygon points="80,25 130,65 110,120 50,110 25,60" fill="rgba(168, 255, 62, 0.2)" stroke="var(--neon-lime)" stroke-width="2" />
+                    <polygon points="80,20 140,80 80,140 20,80" fill="none" stroke="rgba(255,255,255,0.05)" />
+                    <polygon points="80,40 120,80 80,120 40,80" fill="none" stroke="rgba(255,255,255,0.05)" />
+                    <polygon points="80,60 100,80 80,100 60,80" fill="none" stroke="rgba(255,255,255,0.05)" />
+                    <polygon points="${radarPolygon}" fill="rgba(168, 255, 62, 0.2)" stroke="var(--neon-lime)" stroke-width="2" />
                 </svg>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.7rem; color:var(--muted-text); margin-top:1rem">
-                <span>Carbon: ${c.green_score || 82}</span>
-                <span>Water: ${Math.floor(Math.random() * 50 + 30)}</span>
-                <span>Gov: ${Math.floor(Math.random() * 20 + 70)}</span>
-                <span>Social: ${Math.floor(Math.random() * 20 + 60)}</span>
+                <span>Carbon: ${carbonScore}</span>
+                <span>Water: ${waterScore}</span>
+                <span>Gov: ${govScore}</span>
+                <span>Social: ${socialScore}</span>
             </div>
         `;
     }
@@ -831,6 +842,19 @@ function renderPipelineResults(container, data) {
     const pipeFinancial = document.getElementById('pipe-financial-card');
     if (pipeFinancial) {
         const retPct = f.expected_return ? (f.expected_return * 100).toFixed(1) : 0;
+
+        let candleHTML = '';
+        const numCandles = 5;
+        const isPositive = (f.expected_return || 0) >= 0;
+        for (let i=0; i<numCandles; i++) {
+            const isUp = i === numCandles - 1 ? isPositive : (Math.random() > 0.5);
+            const height = Math.max(10, Math.random() * 40 + 10);
+            const wickHeight = height + Math.random() * 20;
+            const topOffset = - (wickHeight - height) / 2;
+            const bg = isUp ? '#00ff88' : '#ff4444';
+            candleHTML += `<div style="width:8px; height:${height}px; background:${bg}; position:relative;"><div style="width:2px; height:${wickHeight}px; background:${bg}; position:absolute; left:3px; top:${topOffset}px;"></div></div>`;
+        }
+
         pipeFinancial.innerHTML = `
             <h4 class="panel-title" style="font-size: 0.8rem">Financial Indicators</h4>
             <div style="margin: 1.5rem 0">
@@ -842,13 +866,9 @@ function renderPipelineResults(container, data) {
                     <span style="font-size:0.8rem">Sentiment</span>
                     <span style="font-weight:700">${f.market_sentiment || 'Neutral'}</span>
                 </div>
-                <!-- Mini Candlestick Visual -->
+                <!-- Dynamic Candlestick Visual -->
                 <div style="display:flex; align-items:flex-end; gap:8px; height:60px; margin-bottom:15px">
-                    <div style="width:8px; height:30px; background:#ff4444; position:relative;"><div style="width:2px; height:45px; background:#ff4444; position:absolute; left:3px; top:-7px;"></div></div>
-                    <div style="width:8px; height:40px; background:#00ff88; position:relative;"><div style="width:2px; height:55px; background:#00ff88; position:absolute; left:3px; top:-7px;"></div></div>
-                    <div style="width:8px; height:20px; background:#00ff88; position:relative;"><div style="width:2px; height:35px; background:#00ff88; position:absolute; left:3px; top:-7px;"></div></div>
-                    <div style="width:8px; height:35px; background:#00ff88; position:relative;"><div style="width:2px; height:50px; background:#00ff88; position:absolute; left:3px; top:-7px;"></div></div>
-                    <div style="width:8px; height:15px; background:#ff4444; position:relative;"><div style="width:2px; height:30px; background:#ff4444; position:absolute; left:3px; top:-7px;"></div></div>
+                    ${candleHTML}
                 </div>
                 <div style="display:flex; gap:4px">
                     <div style="flex:1; height:4px; background:#00ff88;"></div>
@@ -863,18 +883,24 @@ function renderPipelineResults(container, data) {
 
     const pipeSim = document.getElementById('pipe-simulation-card');
     if (pipeSim) {
+        let pathsHtml = '';
+        const endYBase = sim.expected_1y_value && p.total_budget ? 100 - ((sim.expected_1y_value - p.total_budget) / p.total_budget)*100 : 70; 
+
+        for(let i=0; i<5; i++) {
+            const endY = endYBase + (Math.random()-0.5)*80;
+            const ctrlX = 150 + (Math.random()-0.5)*50;
+            const ctrlY = 100 + (Math.random()-0.5)*100;
+            pathsHtml += `<path d="M0 100 Q ${ctrlX} ${ctrlY} 300 ${endY}" fill="none" stroke="rgba(168, 255, 62, 0.05)" />`;
+        }
+        pathsHtml += `<path d="M0 100 Q 150 100 300 ${endYBase}" fill="none" stroke="var(--neon-lime)" stroke-width="2" />`;
+        pathsHtml += `<path d="M0 100 Q 150 40 300 ${endYBase - 40} L 300 ${endYBase + 40} Q 150 110 0 100" fill="rgba(168, 255, 62, 0.03)" />`;
+
         const drawdown = sim.drawdown_probability ? (sim.drawdown_probability * 100).toFixed(1) : 0;
         pipeSim.innerHTML = `
             <h4 class="panel-title" style="font-size: 0.8rem">Monte Carlo Simulation</h4>
             <div class="monte-carlo-container">
                 <svg width="100%" height="160" preserveAspectRatio="none">
-                    <path d="M0 100 Q 50 80 300 130" fill="none" stroke="rgba(168, 255, 62, 0.05)" />
-                    <path d="M0 100 Q 80 50 300 40" fill="none" stroke="rgba(168, 255, 62, 0.05)" />
-                    <path d="M0 100 Q 120 120 300 110" fill="none" stroke="rgba(168, 255, 62, 0.05)" />
-                    <path d="M0 100 Q 150 70 300 20" fill="none" stroke="rgba(168, 255, 62, 0.05)" />
-                    <path d="M0 100 Q 200 150 300 140" fill="none" stroke="rgba(168, 255, 62, 0.05)" />
-                    <path d="M0 100 Q 150 80 300 70" fill="none" stroke="var(--neon-lime)" stroke-width="2" />
-                    <path d="M0 100 Q 150 40 300 30 L 300 120 Q 150 110 0 100" fill="rgba(168, 255, 62, 0.03)" />
+                    ${pathsHtml}
                 </svg>
             </div>
             <div style="font-size:0.75rem; text-align:center; margin-top:10px">
@@ -886,14 +912,28 @@ function renderPipelineResults(container, data) {
 
     const pipeAllocation = document.getElementById('pipe-allocation-card');
     if (pipeAllocation) {
-        const holdingsText = (p.holdings || []).map(h => `${h.ticker}: ${(h.weight * 100).toFixed(0)}%`).join(' | ');
+        const holdings = p.holdings || [];
+        const colors = ['#a8ff3e', '#00d2ff', '#ffd200', '#ff4444', '#b026ff'];
+        let svgCircles = '';
+        let offset = 0;
+        const circumference = 282.7;
+
+        if (holdings.length === 0) {
+            svgCircles = `<circle r="45" cx="60" cy="60" fill="transparent" stroke="#333" stroke-width="12" stroke-dasharray="282.7 282.7" stroke-dashoffset="0" />`;
+        } else {
+            holdings.forEach((h, i) => {
+                const strokeArr = Math.max(0.1, (h.weight * circumference)).toFixed(1);
+                svgCircles += `<circle r="45" cx="60" cy="60" fill="transparent" stroke="${colors[i % colors.length]}" stroke-width="12" stroke-dasharray="${strokeArr} 282.7" stroke-dashoffset="${-offset}" />`;
+                offset += (h.weight * circumference);
+            });
+        }
+
+        const holdingsText = holdings.map(h => `${h.ticker}: ${(h.weight * 100).toFixed(0)}%`).join(' | ');
         pipeAllocation.innerHTML = `
              <h4 class="panel-title" style="font-size: 0.8rem">Allocation Weight</h4>
              <div class="donut-container" style="width:140px; height:140px; margin: 0 auto;">
                 <svg width="120" height="120" viewBox="0 0 120 120">
-                    <circle r="45" cx="60" cy="60" fill="transparent" stroke="#a8ff3e" stroke-width="12" stroke-dasharray="113.1 282.7" stroke-dashoffset="0" />
-                    <circle r="45" cx="60" cy="60" fill="transparent" stroke="#00d2ff" stroke-width="12" stroke-dasharray="79.2 282.7" stroke-dashoffset="-113.1" />
-                    <circle r="45" cx="60" cy="60" fill="transparent" stroke="#ffd200" stroke-width="12" stroke-dasharray="90.5 282.7" stroke-dashoffset="-192.3" />
+                    ${svgCircles}
                 </svg>
              </div>
              <div style="font-size:0.7rem; color:var(--muted-text); text-align:center; margin-top:10px">${holdingsText || 'N/A'}</div>
