@@ -1360,9 +1360,17 @@ async function initInsights() {
             btnRefresh.disabled = true;
             btnRefresh.textContent = 'Refreshing...';
 
-            // In a full app, we'd pull the actual holdings state here.
-            // Sending an empty holdings array triggers the API to use its mock realistic portfolio.
-            const data = await apiFetch('/insights', 'POST', { portfolio: [] });
+            // Pull the actual holdings state for true dynamic sector exposure
+            let userHoldings = [];
+            try {
+                const portData = await portfolioValue(); // Uses Sentinel Portfolio agent
+                if (portData && portData.holdings && portData.holdings.length > 0) {
+                    userHoldings = portData.holdings.map(h => ({ ticker: h.ticker, weight: h.weight * 100 }));
+                }
+            } catch (e) {
+                console.warn('Could not fetch true portfolio for insights fallback', e);
+            }
+            const data = await apiFetch('/insights', 'POST', { portfolio: userHoldings });
 
             // 1. Portfolio Gauge & Breakdown
             const pt = data.portfolio_rating;

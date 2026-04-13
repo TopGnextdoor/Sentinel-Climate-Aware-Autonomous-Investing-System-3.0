@@ -8,10 +8,13 @@ def generate_insights_data(holdings: List[Dict[str, Any]]) -> Dict[str, Any]:
     # If no holdings, provide a default mapping.
     if not holdings:
         holdings = [
-            {"ticker": "NVDA", "shares": 100, "weight": 40.0},
-            {"ticker": "MSFT", "shares": 50, "weight": 25.0},
-            {"ticker": "AAPL", "shares": 200, "weight": 35.0}
+            {"ticker": "NVDA", "shares": 100, "weight": 25.0},
+            {"ticker": "OXY", "shares": 150, "weight": 15.0},
+            {"ticker": "JPM", "shares": 50, "weight": 20.0},
+            {"ticker": "UNH", "shares": 30, "weight": 20.0},
+            {"ticker": "TSLA", "shares": 80, "weight": 20.0}
         ]
+
 
     sector_map = {
         "NVDA": "Technology", "MSFT": "Technology", "AAPL": "Technology", "GOOGL": "Technology", "META": "Technology",
