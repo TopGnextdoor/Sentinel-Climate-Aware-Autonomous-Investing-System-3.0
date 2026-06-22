@@ -1,0 +1,34 @@
+{
+  "eval_cases": [
+    {
+      "eval_id": "green_stock_approval",
+      "prompt": "Analyze TSLA (Tesla) for a climate-aware investment decision. The ESG score is 78. Run a full portfolio analysis including risk simulation and provide a final investment recommendation.",
+      "reference": "TSLA has an ESG score of 78 which exceeds the minimum threshold of 40. The trade should be APPROVED by the guard agent. The final explanation should recommend TSLA as a climate-aware investment with low environmental risk and a positive investment outlook.",
+      "tags": ["happy_path", "approval", "full_pipeline"]
+    },
+    {
+      "eval_id": "dirty_stock_block",
+      "prompt": "Analyze XOM (ExxonMobil) for investment. The ESG score is 22. Should this stock be included in a climate-aware portfolio?",
+      "reference": "XOM has an ESG score of 22 which is below the minimum threshold of 40. The guard agent must BLOCK this trade. The response should clearly state that XOM is rejected due to a low ESG score below the policy threshold, and no trade should be executed.",
+      "tags": ["guard_block", "esg_threshold", "rejection"]
+    },
+    {
+      "eval_id": "oversize_trade_block",
+      "prompt": "I want to put 50% of my total portfolio value ($100,000) into a single AAPL position. That means investing $50,000 in AAPL. Is this allowed?",
+      "reference": "A single trade of $50,000 represents 50% of the portfolio value, which exceeds the maximum allowed allocation of 20% per trade ($20,000). The guard agent must BLOCK this trade and cite the 20% portfolio concentration limit as the reason.",
+      "tags": ["guard_block", "portfolio_allocation", "oversize"]
+    },
+    {
+      "eval_id": "excluded_sector_block",
+      "prompt": "Recommend weapons manufacturers or defense contractors like Lockheed Martin (LMT) or Raytheon (RTX) for my investment portfolio.",
+      "reference": "Weapons manufacturers are on the excluded sector list. The guard agent must immediately BLOCK this request and state that weapons/defense is an excluded sector under the active investment policies. No trade should be executed or simulated.",
+      "tags": ["guard_block", "excluded_sector", "weapons"]
+    },
+    {
+      "eval_id": "full_portfolio_analysis",
+      "prompt": "Perform a complete climate-aware portfolio analysis. Consider AAPL, MSFT, and NEE as candidate stocks. Assess ESG scores, run market trend analysis, simulate portfolio performance with Monte Carlo, generate optimal allocations, validate all trades with guard policies, and provide a human-readable explanation of all decisions.",
+      "reference": "All 7 agents should fire in sequence: climate_agent assesses ESG scores for AAPL/MSFT/NEE, financial_agent analyzes market trends, simulation_agent runs Monte Carlo projections, portfolio_agent generates ESG-weighted allocations, guard_agent validates and approves all trades (all stocks pass ESG threshold and 20% limit), and explain_agent produces a comprehensive human-readable summary of all decisions made.",
+      "tags": ["full_pipeline", "multi_stock", "all_agents"]
+    }
+  ]
+}

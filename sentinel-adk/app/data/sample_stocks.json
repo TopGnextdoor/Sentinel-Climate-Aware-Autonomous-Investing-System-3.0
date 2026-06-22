@@ -1,0 +1,5 @@
+[
+  { "ticker": "AAPL", "name": "Apple Inc.", "price": 175.50 },
+  { "ticker": "MSFT", "name": "Microsoft Corp.", "price": 405.10 },
+  { "ticker": "TSLA", "name": "Tesla Inc.", "price": 180.20 }
+]
