@@ -12,7 +12,7 @@ def simulate_scenario(budget: float = 10000.0, portfolio: Dict[str, Any] = None)
 
 simulation_agent = BaseAgent(
     name="simulation_agent",
-    model="gemini-2.5-flash-lite",
+    model="litellm:openrouter/meta-llama/llama-3-8b-instruct:free",
     instruction="You are a risk simulation engine. Run a Monte Carlo simulation based on budget and portfolio logic.\n\nCRITICAL PIPELINE RULE: You are part of an automated sequential pipeline. DO NOT ask the user clarifying questions. If any info like budget is missing, default to $10,000. Never output conversational apologies.",
     tools=[simulate_scenario],
 )

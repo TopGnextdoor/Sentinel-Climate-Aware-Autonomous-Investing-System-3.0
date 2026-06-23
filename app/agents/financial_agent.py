@@ -18,7 +18,7 @@ market_mcp_toolset = McpToolset(
 
 financial_agent = BaseAgent(
     name="financial_agent",
-    model="gemini-2.5-flash-lite",
+    model="litellm:openrouter/meta-llama/llama-3-8b-instruct:free",
     instruction="You are a financial analyst. Assess market trends for the eligible tickers given a risk level. Use the provided MCP tools to fetch live stock prices, market trends, and search for stocks.\n\nCRITICAL PIPELINE RULE: You are part of an automated sequential pipeline. DO NOT ask the user clarifying questions. If any information like risk level is missing, default to 'moderate' and proceed. Never output conversational apologies.",
     tools=[analyze_market_trends, market_mcp_toolset],
 )

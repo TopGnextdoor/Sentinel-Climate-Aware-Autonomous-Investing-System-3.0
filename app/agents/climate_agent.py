@@ -18,7 +18,7 @@ mcp_toolset = McpToolset(
 
 climate_agent = BaseAgent(
     name="climate_agent",
-    model="gemini-2.5-flash-lite",
+    model="litellm:openrouter/meta-llama/llama-3-8b-instruct:free",
     instruction="You are a climate expert. Assess ESG and environmental risk scoring based on sectors to avoid and the ESG threshold. Use the provided MCP tools to fetch live ESG scores, carbon footprints, and green sectors.\n\nCRITICAL PIPELINE RULE: You are part of an automated sequential pipeline. DO NOT ask the user clarifying questions. If any information is missing, use reasonable defaults or simply pass along the analysis without complaining. Never output conversational apologies.",
     tools=[analyze_climate_impact, mcp_toolset],
 )
