@@ -252,32 +252,66 @@ RULES:
     return {"response": final_response, "status": status}
 
 
-# ── Route registration (same pattern as before) ─────────────────────────
+# ── Direct FastAPI Instance Setup ────────────────────────────────────────
 
-def register_quota_route(app: FastAPI):
-    if hasattr(app, "router") and hasattr(app.router, "routes"):
-        app.router.routes = [r for r in app.router.routes if getattr(r, "path", None) != "/quota-status"]
-    @app.get("/quota-status")
-    def quota_status():
+app = FastAPI(
+    title="Sentinel Climate-Aware Autonomous Investing System",
+    description="A multi-agent autonomous investing system",
+    version="3.0.0"
+)
+
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(static_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+@app.get("/")
+def serve_index():
+    return FileResponse(os.path.join(static_dir, "index.html"))
+
+@app.get("/quota-status")
+def quota_status():
+    return get_quota_summary()
+
+@app.post("/chat")
+async def chat_handler(request: Request):
+    data = await request.json()
+    user_message = data.get("message", "")
+
+    try:
+        result = await asyncio.to_thread(_run_pipeline, user_message)
+    except Exception as exc:
+        traceback.print_exc()
+        result = {
+            "response": f"Pipeline error: {exc}",
+            "status": "ERROR",
+        }
+
+    return JSONResponse(result)
+
+
+# ── Route registration (Fallback for ADK Web) ─────────────────────────
+
+def register_quota_route(target_app: FastAPI):
+    if hasattr(target_app, "router") and hasattr(target_app.router, "routes"):
+        target_app.router.routes = [r for r in target_app.router.routes if getattr(r, "path", None) != "/quota-status"]
+    @target_app.get("/quota-status")
+    def quota_status_fallback():
         return get_quota_summary()
 
 
-def register_chat_route(app: FastAPI):
-    if hasattr(app, "router") and hasattr(app.router, "routes"):
-        app.router.routes = [r for r in app.router.routes if getattr(r, "path", None) not in ("/", "/chat")]
+def register_chat_route(target_app: FastAPI):
+    if hasattr(target_app, "router") and hasattr(target_app.router, "routes"):
+        target_app.router.routes = [r for r in target_app.router.routes if getattr(r, "path", None) not in ("/", "/chat")]
 
-    static_dir = os.path.join(os.path.dirname(__file__), "static")
-    os.makedirs(static_dir, exist_ok=True)
+    if not any(getattr(route, "name", "") == "static" for route in target_app.routes):
+        target_app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-    if not any(getattr(route, "name", "") == "static" for route in app.routes):
-        app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
-    @app.get("/")
-    def serve_index():
+    @target_app.get("/")
+    def serve_index_fallback():
         return FileResponse(os.path.join(static_dir, "index.html"))
 
-    @app.post("/chat")
-    async def chat_handler(request: Request):
+    @target_app.post("/chat")
+    async def chat_handler_fallback(request: Request):
         data = await request.json()
         user_message = data.get("message", "")
 
@@ -293,20 +327,34 @@ def register_chat_route(app: FastAPI):
         return JSONResponse(result)
 
 
-# ── Monkeypatch FastAPI to auto-register routes ──────────────────────────
+# ── Monkeypatch FastAPI to auto-register routes on any dynamically created app ──────────────────────────
 original_init = FastAPI.__init__
 
 def patched_init(self, *args, **kwargs):
     original_init(self, *args, **kwargs)
-    register_quota_route(self)
-    register_chat_route(self)
+    # Defer route cleaning slightly so ADK routes can be replaced if registered later
+    async def defer_registration():
+        await asyncio.sleep(0.5)
+        try:
+            register_quota_route(self)
+            register_chat_route(self)
+        except Exception:
+            pass
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(defer_registration())
+    except RuntimeError:
+        # No running event loop, register immediately
+        register_quota_route(self)
+        register_chat_route(self)
 
 FastAPI.__init__ = patched_init
 
 for obj in gc.get_objects():
-    if isinstance(obj, FastAPI):
+    if isinstance(obj, FastAPI) and obj is not app:
         try:
             register_quota_route(obj)
             register_chat_route(obj)
         except Exception:
             pass
+

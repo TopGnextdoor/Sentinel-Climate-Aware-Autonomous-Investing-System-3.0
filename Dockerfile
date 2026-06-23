@@ -25,5 +25,5 @@ ENV GEMINI_API_KEY_PROD=""
 ENV ALPACA_KEY=""
 ENV ALPACA_SECRET=""
 
-# Start the ADK web server on dynamic port (Render support)
-CMD ["sh", "-c", "uv run adk web --host 0.0.0.0 --port ${PORT:-8080}"]
+# Start the FastAPI server on dynamic port (Render support)
+CMD ["sh", "-c", "uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
