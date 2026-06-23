@@ -255,18 +255,16 @@ RULES:
 # ── Route registration (same pattern as before) ─────────────────────────
 
 def register_quota_route(app: FastAPI):
-    for route in app.routes:
-        if getattr(route, "path", None) == "/quota-status":
-            return
+    if hasattr(app, "router") and hasattr(app.router, "routes"):
+        app.router.routes = [r for r in app.router.routes if getattr(r, "path", None) != "/quota-status"]
     @app.get("/quota-status")
     def quota_status():
         return get_quota_summary()
 
 
 def register_chat_route(app: FastAPI):
-    for route in app.routes:
-        if getattr(route, "path", None) == "/chat":
-            return
+    if hasattr(app, "router") and hasattr(app.router, "routes"):
+        app.router.routes = [r for r in app.router.routes if getattr(r, "path", None) not in ("/", "/chat")]
 
     static_dir = os.path.join(os.path.dirname(__file__), "static")
     os.makedirs(static_dir, exist_ok=True)
