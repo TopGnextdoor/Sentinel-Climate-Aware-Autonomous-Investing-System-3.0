@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  sentinel-backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # API keys loaded from the environment
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_KEY_DEV=${GEMINI_API_KEY_DEV}
+      - GEMINI_API_KEY_PROD=${GEMINI_API_KEY_PROD}
+      - ALPACA_KEY=${ALPACA_KEY}
+      - ALPACA_SECRET=${ALPACA_SECRET}
+    env_file:
+      # Loads variables from a .env file if it exists locally
+      - .env
+    # Note: The MCP servers (market, policy, esg) are configured to run via STDIO.
+    # The ADK backend will automatically spawn them as child processes inside 
+    # this container when the runtime starts, fulfilling the requirement to 
+    # start both the backend and MCP servers together.

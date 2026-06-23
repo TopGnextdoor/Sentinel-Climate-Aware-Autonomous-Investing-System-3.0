@@ -1,0 +1,9 @@
+service_name: sentinel-adk
+region: us-central1
+memory: 2Gi
+env_vars:
+  - GEMINI_API_KEY
+  - GEMINI_API_KEY_DEV
+  - GEMINI_API_KEY_PROD
+  - ALPACA_KEY
+  - ALPACA_SECRET
