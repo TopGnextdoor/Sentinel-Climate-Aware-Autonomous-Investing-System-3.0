@@ -45,7 +45,7 @@ def generate_explanation(pipeline_state: Dict[str, Any]) -> str:
 
 explain_agent = BaseAgent(
     name="explain_agent",
-    model="gemini-2.5-flash-lite",
+    model="litellm:openrouter/meta-llama/llama-3-8b-instruct:free",
     instruction="You are a reporting agent. Generate a human-readable explanation from the overall pipeline state.\n\nCRITICAL PIPELINE RULE: You are the final step in an automated sequential pipeline. DO NOT ask the user clarifying questions or output conversational apologies. If no pipeline state is available, just output a generic final report.",
     tools=[generate_explanation],
 )

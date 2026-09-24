@@ -16,9 +16,15 @@ def get_esg_score(ticker: str, fallback: float = 50.0) -> float:
         pass
         
     static_mapping = {
-        "AAPL": 72.0,
-        "MSFT": 68.0,
-        "TSLA": 55.0
+        "AAPL": 72.0, "MSFT": 68.0, "TSLA": 55.0,
+        "GOOGL": 74.0, "AMZN": 60.0, "NVDA": 62.0,
+        "META": 58.0, "NEE": 92.0, "ENPH": 90.0,
+        "FSLR": 88.0, "JNJ": 70.0, "UNH": 65.0,
+        "V": 66.0, "JPM": 54.0, "PEP": 68.0,
+        "KO": 67.0, "DIS": 60.0, "COST": 63.0,
+        "AMD": 61.0, "CRM": 72.0, "ADBE": 71.0,
+        "NFLX": 57.0, "XOM": 30.0, "CVX": 28.0,
+        "BA": 40.0,
     }
     return float(static_mapping.get(ticker, fallback))
 
@@ -38,7 +44,28 @@ def fetch_climate_metrics(avoid_sectors: List[str], esg_threshold: float = 60.0)
         "AAPL": "Technology",
         "MSFT": "Technology",
         "TSLA": "Automotive",
-        "XOM": "Fossil Fuels"
+        "GOOGL": "Technology",
+        "AMZN": "E-Commerce",
+        "NVDA": "Semiconductors",
+        "META": "Technology",
+        "NEE": "Renewables",
+        "ENPH": "Renewables",
+        "FSLR": "Renewables",
+        "JNJ": "Healthcare",
+        "UNH": "Healthcare",
+        "V": "Financial Services",
+        "JPM": "Financial Services",
+        "PEP": "Consumer Staples",
+        "KO": "Consumer Staples",
+        "DIS": "Entertainment",
+        "COST": "Consumer Staples",
+        "AMD": "Semiconductors",
+        "CRM": "Technology",
+        "ADBE": "Technology",
+        "NFLX": "Entertainment",
+        "XOM": "Fossil Fuels",
+        "CVX": "Fossil Fuels",
+        "BA": "Aerospace & Defense",
     }
     
     avoid_sectors_lower = [s.lower() for s in (avoid_sectors or [])]

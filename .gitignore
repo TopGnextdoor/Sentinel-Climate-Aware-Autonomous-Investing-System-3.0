@@ -1,0 +1,11 @@
+# Ignore images, videos, photos, and media assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.mov
+*.avi
+*.webm
+Sentinel Images/
+**/Sentinel Images/

@@ -3,11 +3,15 @@ from typing import Dict, List, Any
 
 # Fallback fake data in case API fails
 FALLBACK_PRICES = {
-    "AAPL": 189.23,
-    "MSFT": 402.11,
-    "TSLA": 251.44,
-    "XOM": 105.30,
-    "NEE": 70.00
+    "AAPL": 189.23,  "MSFT": 402.11,  "TSLA": 251.44,
+    "GOOGL": 178.30, "AMZN": 186.50,  "NVDA": 135.60,
+    "META": 510.20,  "NEE": 70.00,    "ENPH": 112.40,
+    "FSLR": 195.80,  "JNJ": 155.30,   "UNH": 490.70,
+    "V": 280.10,     "JPM": 205.60,   "PEP": 165.20,
+    "KO": 62.40,     "DIS": 110.50,   "COST": 880.30,
+    "AMD": 165.80,   "CRM": 265.40,   "ADBE": 475.60,
+    "NFLX": 640.20,  "XOM": 105.30,   "CVX": 150.40,
+    "BA": 185.70,
 }
 
 def get_stock_price(ticker: str) -> float:
