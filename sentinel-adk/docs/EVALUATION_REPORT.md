@@ -2,6 +2,9 @@
 
 ## Executive Summary
 
+> **Verified Commit Hash**: [`25b738c79f79ee4f7dcb414bfc88956d9b43fced`](https://github.com/TopGnextdoor/Sentinel-Climate-Aware-Autonomous-Investing-System-3.0/commit/25b738c79f79ee4f7dcb414bfc88956d9b43fced)  
+> **Git Release Tag**: [`eval-v1.0`](https://github.com/TopGnextdoor/Sentinel-Climate-Aware-Autonomous-Investing-System-3.0/releases/tag/eval-v1.0)
+
 To systematically evaluate the reliability, tool usage accuracy, policy enforcement, and safety of the **Sentinel Climate-Aware Autonomous Investing System**, we implemented a comprehensive multi-agent evaluation framework. 
 
 The evaluation suite tests the full 7-agent pipeline (`climate_agent` → `financial_agent` → `simulation_agent` → `portfolio_agent` → `trader_agent` → `guard_agent` → `explain_agent`) and associated MCP servers across 5 golden benchmark scenarios spanning:
