@@ -16,7 +16,7 @@ def optimize_portfolio(budget: float = 10000.0, climate_data: Dict[str, Any] = N
 
 portfolio_agent = BaseAgent(
     name="portfolio_agent",
-    model="gemini-2.5-flash-lite",
+    model="litellm:openrouter/meta-llama/llama-3-8b-instruct:free",
     instruction="You are a portfolio allocation expert. Generate a portfolio allocation using climate data and financial data.\n\nCRITICAL PIPELINE RULE: You are part of an automated sequential pipeline. DO NOT ask the user clarifying questions. If a budget is missing, default to $10,000. Never output conversational apologies.",
     tools=[optimize_portfolio],
 )

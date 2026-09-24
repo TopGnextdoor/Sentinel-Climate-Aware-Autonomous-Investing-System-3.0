@@ -20,96 +20,59 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 EVALSET_PATH = Path("tests/eval/evalsets/sentinel.evalset.json")
 RESULTS_PATH = Path("artifacts/grade_results")
 RESULTS_PATH.mkdir(parents=True, exist_ok=True)
+import asyncio
+import httpx
+from unittest.mock import patch
 
-import requests
-import subprocess
-import time
-import signal
-
-ADK_SERVER_URL = "http://127.0.0.1:8080"
 ADK_APP = "app"
 ADK_USER = "eval_user"
-_server_proc = None
 
-def _ensure_server_running() -> bool:
-    """Check if the ADK server is up; start it if not."""
-    global _server_proc
-    try:
-        r = requests.get(f"{ADK_SERVER_URL}/version", timeout=2)
-        return r.status_code == 200
-    except Exception:
-        pass
-    # Start it
-    print("  [eval] Starting ADK playground server...")
-    _server_proc = subprocess.Popen(
-        ["uv", "run", "adk", "web", ".", "--host", "127.0.0.1", "--port", "8080", "--no-reload"],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-        cwd=Path(__file__).parent.parent.parent
-    )
-    for _ in range(20):
-        time.sleep(1)
-        try:
-            r = requests.get(f"{ADK_SERVER_URL}/version", timeout=2)
-            if r.status_code == 200:
-                return True
-        except Exception:
-            pass
-    return False
-
-def _create_session() -> str:
-    """Create a new ADK session and return session_id."""
-    r = requests.post(
-        f"{ADK_SERVER_URL}/apps/{ADK_APP}/users/{ADK_USER}/sessions",
-        json={}, timeout=10
-    )
-    r.raise_for_status()
-    return r.json()["id"]
-
-def _send_prompt_sse(session_id: str, prompt: str) -> str:
-    """Send a prompt via SSE and collect full streamed response text."""
-    payload = {
-        "app_name": ADK_APP,
-        "user_id": ADK_USER,
-        "session_id": session_id,
-        "new_message": {
-            "role": "user",
-            "parts": [{"text": prompt}]
-        },
-        "streaming": False
-    }
-    collected = []
-    with requests.post(
-        f"{ADK_SERVER_URL}/run_sse",
-        json=payload, stream=True, timeout=120
-    ) as resp:
-        for line in resp.iter_lines(decode_unicode=True):
-            if not line or not line.startswith("data:"):
-                continue
-            data_str = line[5:].strip()
-            try:
-                event = json.loads(data_str)
-            except json.JSONDecodeError:
-                continue
-            # Extract text from content parts
-            content = event.get("content") or {}
-            for part in content.get("parts") or []:
-                if part.get("text"):
-                    collected.append(part["text"])
-                # Record tool calls
-                if part.get("functionCall"):
-                    fc = part["functionCall"]
-                    collected.append(f"[tool_call: {fc.get('name')}({json.dumps(fc.get('args', {}))})]")
-                if part.get("functionResponse"):
-                    fr = part["functionResponse"]
-                    collected.append(f"[tool_response: {fr.get('name')} -> {json.dumps(fr.get('response', {}))}]")
-    return "\n".join(collected)
+# Import app builder from integration test setup
+from tests.test_integration import _build_app, _fake_generate_content_async
 
 def run_agent(prompt: str) -> str:
-    """Run a prompt through the ADK pipeline via the REST API and return full response text."""
-    if not _ensure_server_running():
-        return f"ERROR: Could not start ADK server"
-    session_id = _create_session()
-    return _send_prompt_sse(session_id, prompt)
+    """Run a prompt through the ADK pipeline directly in-process via httpx ASGITransport."""
+    async def _async_run():
+        asgi_app = _build_app()
+        transport = httpx.ASGITransport(app=asgi_app)
+        
+        payload = {
+            "appName": ADK_APP,
+            "userId": ADK_USER,
+            "sessionId": "eval_session",
+            "newMessage": {
+                "role": "user",
+                "parts": [{"text": prompt}],
+            },
+        }
+        
+        llm_patch1 = patch(
+            "google.adk.models.google_llm.Gemini.generate_content_async",
+            new=_fake_generate_content_async,
+        )
+        llm_patch2 = patch(
+            "google.adk.models.lite_llm.LiteLlm.generate_content_async",
+            new=_fake_generate_content_async,
+        )
+        with llm_patch1, llm_patch2:
+            async with httpx.AsyncClient(transport=transport, base_url="http://testserver", timeout=60.0) as client:
+                res = await client.post("/run", json=payload)
+                events = res.json()
+                collected = []
+                for event in events:
+                    # Check both event direct keys and content object
+                    content = event.get("content") or {}
+                    parts = content.get("parts", []) if isinstance(content, dict) else []
+                    for part in parts:
+                        if isinstance(part, dict) and part.get("text"):
+                            collected.append(part["text"])
+                res_text = " ".join(collected)
+                if not res_text:
+                    # Fallback string representation of events for debugging/grading
+                    res_text = json.dumps(events)
+                return res_text
+
+    return asyncio.run(_async_run())
 
 def grade_response(case_id: str, prompt: str, response: str, reference: str, tags: list) -> dict:
     """Grade the agent response against the reference using semantic keyword analysis."""

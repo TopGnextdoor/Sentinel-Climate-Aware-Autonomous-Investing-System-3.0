@@ -10,7 +10,7 @@ class BaseAgent(Agent):
             res = self._execute_llm_call(*args, **kwargs)
             return res
         finally:
-            model_name = getattr(self, "model", "gemini-2.5-flash-lite")
+            model_name = getattr(self, "model", "litellm:openrouter/meta-llama/llama-3-8b-instruct:free")
             track_call(model_name)
 
     def _execute_llm_call(self, *args, **kwargs):

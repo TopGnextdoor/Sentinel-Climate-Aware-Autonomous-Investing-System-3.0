@@ -81,7 +81,7 @@ NEVER allow a trade to proceed if either check returns a violation. This rule is
 
 guard_agent = BaseAgent(
     name="guard_agent",
-    model="gemini-2.5-flash",
+    model="litellm:openrouter/meta-llama/llama-3-8b-instruct:free",
     instruction=GUARD_INSTRUCTION,
     tools=[check_intent_for_policy_violation, validate_intent, policy_mcp_toolset],
 )

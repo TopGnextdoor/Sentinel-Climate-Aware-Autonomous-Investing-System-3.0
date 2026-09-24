@@ -13,8 +13,28 @@ def generate_trade_proposals(allowed_assets: list = None, max_trade: float = 100
         "AAPL": {"sector": "technology", "risk_score": 30},
         "MSFT": {"sector": "technology", "risk_score": 25},
         "TSLA": {"sector": "auto", "risk_score": 60},
+        "GOOGL": {"sector": "technology", "risk_score": 28},
+        "AMZN": {"sector": "e-commerce", "risk_score": 40},
+        "NVDA": {"sector": "semiconductors", "risk_score": 55},
+        "META": {"sector": "technology", "risk_score": 45},
+        "NEE": {"sector": "renewables", "risk_score": 20},
+        "ENPH": {"sector": "renewables", "risk_score": 50},
+        "FSLR": {"sector": "renewables", "risk_score": 48},
+        "JNJ": {"sector": "healthcare", "risk_score": 15},
+        "UNH": {"sector": "healthcare", "risk_score": 22},
+        "V": {"sector": "financial services", "risk_score": 20},
+        "JPM": {"sector": "financial services", "risk_score": 35},
+        "PEP": {"sector": "consumer staples", "risk_score": 12},
+        "KO": {"sector": "consumer staples", "risk_score": 10},
+        "DIS": {"sector": "entertainment", "risk_score": 42},
+        "COST": {"sector": "consumer staples", "risk_score": 18},
+        "AMD": {"sector": "semiconductors", "risk_score": 58},
+        "CRM": {"sector": "technology", "risk_score": 32},
+        "ADBE": {"sector": "technology", "risk_score": 30},
+        "NFLX": {"sector": "entertainment", "risk_score": 45},
         "XOM": {"sector": "fossils", "risk_score": 85},
-        "NEE": {"sector": "renewables", "risk_score": 20}
+        "CVX": {"sector": "fossils", "risk_score": 80},
+        "BA": {"sector": "aerospace", "risk_score": 65},
     }
     if not allowed_assets:
         allowed_assets = ["AAPL"]
@@ -49,7 +69,7 @@ market_mcp_toolset = McpToolset(
 
 trader_agent = BaseAgent(
     name="trader_agent",
-    model="gemini-2.5-flash-lite",
+    model="litellm:openrouter/meta-llama/llama-3-8b-instruct:free",
     instruction="You are a trade execution engine. You generate trade proposals and execute them via Alpaca. Use the provided MCP tools to fetch live stock prices to validate costs before trading.\n\nCRITICAL PIPELINE RULE: You are part of an automated sequential pipeline. DO NOT ask the user clarifying questions. If the user only asks for an analysis and does not explicitly request a trade execution, DO NOT propose or execute a trade. Just pass the analysis along.",
     tools=[generate_trade_proposals, execute_trade, market_mcp_toolset],
 )
